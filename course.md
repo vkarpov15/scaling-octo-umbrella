@@ -241,3 +241,78 @@ the current number of articles.
 Now, once you click on this "Load Articles" button, you'll make an HTTP
 request to load the global feed of blog posts, and display the total number
 of articles.
+
+# Single Page App Routing Using React-Router
+
+Now that you've seen how to use middleware to make HTTP requests, let's
+implement single page app routing.
+
+The end result of this lesson will be something like this, where you can
+navigate between the home view and the login view. You'll implement the
+actual login functionality in a later lesson.
+
+## Introducing React-Router
+
+React-router is the de facto standard router for redux apps. To add it to
+your project, put a dependency on 'react-router' in `package.json`. Next,
+in `index.js`, let's use an ES6 destructuring import statement to import
+several handy components from the `react-router` package:
+
+* The `Link` component is used to create react-router compatible links
+* The `Router`, `Route`, and `IndexRoute` components are used to structure
+your app's routes,
+* Finally, `hashHistory` is a helper for telling react-router what history
+to use. This course won't cover different histories, so you can consider this
+as boilerplate.
+
+So far your `ReactDOM.render()` call has done nothing but render the
+`App` component. React-router will require you to break your app up into
+separate components, at least one for each view.
+
+You configure react-router using components: first you create a `Router`
+with an associated history, then you create a root route and associate
+a component with it, in this case the `Appdsfsdf` component, and a path. You can nest
+Route components, so let's create an `IndexRoute` and associate it with
+the `Home` component, and a `Route` whose path is 'login' and component is
+`Login`.
+
+This code configures react-router to always display the `App`
+component, and display the `Home` component when the URL is "/", and the
+`Login` component when the URL is "/login". Let's take a look at what these
+components look like.
+
+## Multiple Components
+
+First, let's rework the `App` component to work with react-router. Let's
+create a `Header` component that will display the "Conduit" banner and
+display it in a div.
+
+Notice that this component is just an ES6 arrow function. There are numerous
+ways to create React components. You can declare a class that inherits from
+`React.Component`, or you can just use an arrow function that returns some
+JSX. The arrow function declaration is known as a "presentational component".
+Presentational components have some limitations: for example, they don't
+have access to life-cycle hooks like `componentWillMount`. However, the
+`Header` component is really simple and doesn't need life-cycle hooks, all
+it does for now is just render some text.
+
+The `Header` component is also going to use the react-router `Link` component.
+This component behaves like your standard HTML A tag, but it's designed to
+work with react-router. For the purposes of this course, just know that `Link`
+is the react-router equivalent to an A tag. The "to" property on a "Link"
+component is equivalent to the "href" property on an HTML A tag.
+
+Let's also add a Login and Home component using the ES6 arrow function
+syntax. However, notice that these don't show up in the browser, despite
+the fact that react-router is configured to display them. That's because
+the `App` component needs to know where to display the Home and Login
+components.
+
+You do this by putting the `this.props.children` block here.
+You'll learn a lot more about the `props` property on react components,
+but for now just know that the `props.children` property is how you tell
+`react-router` where to render the component you associated with your route.
+
+Now, when you go back to your browser, you'll see that you should be able
+to switch back and forth between the Home and Login views, and the URL
+changes between "/" and "/login"
