@@ -91,9 +91,28 @@ Now that "Hello, World" is out of the way, let's take a look at how redux
 and React component state work. Redux is an npm module, so let's add it to
 `package.json` and re-run npm install.
 
+```
+   "version": "0.0.0",
+   "dependencies": {
+     "react": "15.0.0",
+-    "react-dom": "15.0.0"
++    "react-dom": "15.0.0",
++    "redux": "3.3.1"
+   },
+   "devDependencies": {
+     "babel-loader": "6.2.4",
+```
+
 Now, let's start the server and start
 webpack in "watch" mode so all changes recompile live, and open up a browser
 to the "Hello, World" example. Over in `index.js`, let's include redux.
+
+```
+ import ReactDOM from 'react-dom';
+ import React from 'react';
++import { createStore } from 'redux';
++
+```
 
 ## Introducing Stores
 
@@ -106,6 +125,18 @@ To create a store that represents the state of a checkbox, let's create a
 default state, a reducer that allows actions of type 'TOGGLE' to change
 the state, and finally use redux's `createStore()` function to create a new
 store.
+
+```
++const defaultState = { checked: false };
++const reducer = function(state = defaultState, action) {
++  switch (action.type) {
++    case 'TOGGLE':
++      return Object.assign({}, state, { checked: !state.checked });
++  }
++  return state;
++};
++const store = createStore(reducer);
+```
 
 Note that the reducer receives both the current state and the action as
 parameters, and returns the modified state. A well-written reducer should
@@ -139,9 +170,37 @@ state. React calls the `render()` function every time the
 component's state changes, and it's the `render()` function's job to
 tell React how to draw the component.
 
+```
+ class App extends React.Component {
++  constructor() {
++    super();
++    this.state = {};
++  }
++
++  componentWillMount() {
++    store.subscribe(() => this.setState(store.getState()));
++  }
++
+```
+
 Let's tweak the App component to display a checkbox whose state depends on
 the redux store. When the `checked` state is falsy, note that the checkbox
 is off. When you change `checked` to true by default, the checkbox is on.
+
+```
+   render() {
+     return (
+-      <h1>Hello, World!</h1>
++      <div>
++        <h1>To-dos</h1>
++        <div>
++          Learn Redux&nbsp;
++          <input
++            type="checkbox" />
++        </div>
++      </div>
+     );
+```
 
 What happens when you click on the checkbox? Absolutely nothing! What gives?
 One of the key ideas of React is that what gets displayed is a pure function
@@ -156,6 +215,24 @@ action is a plain-old JavaScript object that tells your reducer what happened.
 Let's create a function `onClick` that calls the redux store's `dispatch()`
 function, which is how you fire off a new action in redux.
 
+```
+   render() {
++    const onClick = () => store.dispatch({ type: 'TOGGLE' });
+     return (
+-      <h1>Hello, World!</h1>
++      <div>
++        <h1>To-dos</h1>
++        <div>
++          Learn Redux&nbsp;
++          <input
++            type="checkbox"
++            checked={!!this.state.checked}
++            onClick={onClick} />
++        </div>
++      </div>
+     );
+```
+
 Redux actions
 **must** have a `type` property, so let's create an action with type `TOGGLE`
 to match the reducer, and add the `onClick` function as an `onClick` handler
@@ -168,6 +245,26 @@ lets you manipulate other elements based on the state of the checkbox.
 For example, let's add an element that appears only when the checkbox is
 checked. Now this H2 element will show up in the browser when the checkbox is
 on.
+
+```
+   render() {
+     const onClick = () => store.dispatch({ type: 'TOGGLE' });
+     return (
+       <div>
+         <h1>To-dos</h1>
+         <div>
+           Learn Redux&nbsp;
+           <input
+             type="checkbox"
+             checked={!!this.state.checked}
+             onClick={onClick} />
+         </div>
++        {
++          this.state.checked ? (<h2>Done!</h2>) : null
++        }
+       </div>
+     );
+```
 
 This curly-brace syntax enables you to put JavaScript expressions into your
 HTML. A common cause of bugs when using curly-braces like the conditional
