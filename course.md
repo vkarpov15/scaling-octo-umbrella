@@ -176,3 +176,68 @@ statement in JavaScript. As written, this code is an expression, but
 once you add a semicolon, it becomes a statement and webpack gives you
 a scary compiler error. Make sure you don't put semi-colons in your curly
 braces!
+
+# HTTP Requests With Redux Middleware
+
+Most redux apps are going to need to make HTTP requests to interact with
+a server. However, note that a redux reducer needs to be synchronous. In
+other words, it needs to `return` the new state. So where go asynchronous
+actions like HTTP requests fit in redux? The right place to handle
+asynchronous operations in redux is in middleware.
+
+## Introducing Middleware
+
+So far you've seen redux stores that have a reducer and a current state.
+Middleware is another part of the redux `createStore()` API. A redux
+middleware function defined as a function of a function of a function:
+the function takes a store, a `next()` function, and the current action
+being dispatched. Let's write a simple middleware that logs every action
+that's dispatched to the console.
+
+Redux calls your middleware function every time a new action is dispatched.
+The key idea of middleware is the `next()` function. The `next()` function
+passes control to the next middleware in the chain, or the reducer if
+there's no more middleware. The `next()` function takes an action as a
+parameter, so your middleware can transform the action, or even create an
+entirely new action.
+
+Also, since your middleware needs to call `next()` to signify that the
+middleware is done, you can call `next()` asynchronously. To illustrate
+this point, let's wrap this `next()` call in a `setTimeout()`, and, as you
+see, the middleware works as expected in the browser.
+
+## Introducing Superagent
+
+In this course you'll be using a library called superagent to make HTTP
+requests. Let's include superagent in `package.json`, and then change
+the `App` component to make an HTTP request to load the global feed
+for Conduit. When you pull up the Chrome network tab in Conduit, you'll
+see this HTTP request. Let's copy this URL into the `App` component and
+change the app component to dispatch an action whose `payload` property
+is a superagent request.
+
+A superagent request exposes a promise-like interface: you can call `.then()`
+on a superagent request to execute it. If you're not familiar with promises,
+check out the Mozilla docs in the link.
+
+## Promise Middleware
+
+This `payload` property on the action you're dispatching contains a promise.
+Let's write some middleware that will execute this promise for you, so the
+reducer can be nice and synchronous. Let's rename the middleware to
+`promiseMiddleware`, and make the middleware check if the action's `payload`
+property is a promise. A promise's `.then()` function takes two parameters,
+a function that gets called when the promise is resolved, and a function that
+gets called when the function is rejected. Let's handle those two cases
+and call `next()` asynchronously when the promise has been resolved or
+rejected.
+
+Notice that the middleware transforms the action so your reducer doesn't
+even have to be aware that `action.payload` was initially a promise. Let's
+write a reducer that exposes the `articlesCount` property from the HTTP
+response on the redux state, and then change the `App` component to display
+the current number of articles.
+
+Now, once you click on this "Load Articles" button, you'll make an HTTP
+request to load the global feed of blog posts, and display the total number
+of articles.
